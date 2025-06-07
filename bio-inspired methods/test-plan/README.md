@@ -1,96 +1,88 @@
-# cheese
-This project aims to solve an optimization problem for a cheese supply chain using different optimizations.
-The main methods used are bio-inspired optimizations, done by using already implemented libraries.
+# Plan de ejecución para pruebas de los métodos bioinspirados
 
-# Model
-The initially proposed model aims to simplify an already established optimization model *(not shown here)* in the framework of this project.
-The variables defined for this model are the following sets:
+Se definen 2 bloques de parámetros para probar con cada algoritmo
+1. Exploratorio
+2. Balanceado (debe tener mejores resultados que el bloque 1)
 
-| **Variable**  | **Description**        |
-|---------------|------------------------|
-| $`cacopios`$  | Collection centers set |
-| $`clientes`$  | Clients set            |
-| $`productos`$ | Products set           |
+Para todos los algoritmos se debe recopilar los siguientes criterios de optimización
 
-Every collection center has a defined inventory `capacity`, 
-this capacity $` stock `$ represents the current cheese capacity of that center given on a consistent unit.
-The stock has a defined **cost per unit**, $` price `$.
-Each collection center also has a set transport cost to that client,  
+#### Optimalidad
+- Función objetivo
+- Gráfica de convergencia (tomar la mejor configuración de los bloques, y hacer una ejecución para graficar)
+    - La mejor configuración se toma con la función objetivo y el coeficiente de variación más bajos
 
-## Schema
-The $` n `$ collection centers are represented as a vector, each with a defined quantity $` x `$.
-The quantity for the $`i`$th position represents the amount of the total demand $` D `$ that collection center $` j_i `$ is going to supply.
+#### Variabilidad del método
+- Media
+- Coeficiente de variación: $`\frac{\sigma}{\bar{X}}`$
 
-$$
-\begin{array} {|r|r|r|r|r|r|}
-    \hline x_0 & x_1 & x_2 & x_3 & \cdots & x_n \\
-    \hline
-\end{array}
-\quad \therefore \quad x_i = cacopios_i
-$$
+#### Tiempo computacional
+- Individual (por iteración)
+- Promedio (múltiples pruebas)
 
-## Objective function
-Minimize the total costs for the supply chain
+## SA
 
-$$
-\begin{align*}
-Min(f(x)) &= \sum_{i=0}^{n} \left(cacopios_i \times price_i \right) + transport_i 
-\end{align*}
-$$
+### Definir parámetros
 
-where
+#### Bloque 1
 
-$$
-\begin{align*}
-\sum_{i=0}^{n} x_i &= D \\
-x_i &\leq stock_i
-\end{align*}
-$$
+1. Temperatura inicial
+   $` T_{inicial} = [50, 75, 100] `$
+2. Tasa de enfriamiento (alpha)
+   $` \alpha = [0.5, 0.7, 0.9] `$
+3. Temperatura final
+   $` T_{final} = 1e-5 `$
+4. Máximo de iteraciones
+    -  De acuerdo a los parámetros de arriba, evitar que el método se detenga por ese criterio
 
-This function operates within the restrictions above
+#### Bloque 2
 
-# New model 
+1. Temperatura inicial
+   $` T_{inicial} = [100, 200, 300] `$
+2. Tasa de enfriamiento (alpha)
+   $` \alpha = \left\{ 0.900 \rightarrow 0.999 : \alpha_{i+1} = \alpha_i + 0.011 \right\} `$
+3. Máximo de iteraciones
+    -  De acuerdo a los parámetros de arriba, evitar que el método se detenga por ese criterio
 
-Proposed model didn't represent well enough the real optimization problem, 
-also it was deemed as *too simple* to use optimization algorithms, so a new model is proposed.
+## GA
 
-## Variables (wip)
+### Definir parámetros
 
-| Variable                | Description |
-|-------------------------|-------------|
-| $`N`$                   |             |
-| $`CA_i`$                |             |
-| $`CA_p`$                |             |
-| $`k(CA_i)`$             |             |
-| $`Precio(CA_i)`$        |             |
-| $`cTransp(CA_i)`$       |             |
-| $`TiempoAlistam(CA_i)`$ |             |
-| $`TiempoMaxDefinido`$   |             |
-| $`TiempoTransp(CA_i)`$  |             |
-| $`Tiempo(CA_i)`$        |             |
-| $`cTiempo`$             |             |
-| $`Demanda`$             |             |
-| $`Stock(CA_i)`$         |             |
-| $`Ppotencial(CA_i)`$    |             |
+#### Bloque 1
 
-## Optimization model (wip)
-The amount of product to be delivered from every collection center to supply a demand `Demanda`
-& which is the best collection center to respond to that demand.
+1. Tasa de mutación
+   $` T_{mutación} = [0.5, 0.7, 0.9] `$
+2. Tasa de cruce
+   $` T_{cruce} = [0.5, 0.7, 0.9] `$
+3. Tamaño de la población
+   $` size_{pob} = [50, 100, 150] `$
+4. Número de generaciones
+   $` N_{gen} = [100, 300, 500] `$
 
-$$
-\begin{align*}
-    Min(f) = \sum_{i=0 \quad i\neq p}^{N} &\big[ k(CA_i) \times Precio(CA_i) + cTransp(CA_i) + Tiempo(CA_i) \times cTiempo \big] \, + \\
-    &\big[ k(CA_p) \times Precio(CA_p) + cTransp(CA_p) + Tiempo(CA_p) \times cTiempo \big]
-\end{align*}
-$$
+#### Bloque 2
 
-Bound to the following restrictions:
+1. Tasa de mutación
+   $` T_{mutación} = \left\{ 0.1 \rightarrow 0.5 : T_{mutación+1} = T_{mutación} + 0.1 \right\} `$
+2. Tasa de cruce
+   $` T_{cruce} = \left\{ 0.1 \rightarrow 0.7 : T_{cruce+1} = T_{cruce} + 0.1 \right\} `$
 
-$$
-\begin{align*}
-    \sum_{i=0}^{N} kCA_i &= Demanda \\
-    kCA_i &\leq Stock(CA_i) + Ppotencial(CA_i) &\therefore \, i=0,\cdots ,N \\
-    TiempoAlistam(CA_i) &\leq TiempoMaxDefinido &\therefore \, i=0,\cdots ,N \\
-    Tiempo(CA_i) &= TiempoAlistam(CA_i) + TiempoTransp(CA_i) \\
-\end{align*}
-$$
+## ACO
+
+### Definir parámetros
+
+#### Bloque 1
+
+1. Tasa evaporación
+   $` T_{evaporación} = [0.5, 0.7, 0.9] `$
+2. Tamaño colonia
+   $` size_{col} = [20, 30, 50] `$
+3. Número de generaciones
+   $` N_{gen} = [50, 100, 150] `$
+4. alpha
+   $` \alpha = [1.0, 1.5, 2.0] `$
+5. beta
+   $` \beta = [1.0, 1.5, 2.0] `$
+
+#### Bloque 2
+
+1. Tasa evaporación
+   $` T_{evaporación} = \left\{ 0.900 \rightarrow 0.999 : T_{evaporación_{i+1}} = T_{evaporación_i} + 0.011 \right\} `$
