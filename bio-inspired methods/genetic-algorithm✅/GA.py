@@ -216,7 +216,7 @@ def run_experiment(
             "iteraciones": iterations,
         }
 
-    results = Parallel(n_jobs=4)(
+    results = Parallel(n_jobs=6)(
         delayed(single_run)(i, p_mutate, p_cross, pop_size, max_gen)
         for i in range(runs)
     )
