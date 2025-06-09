@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import copy
 import timeit
 import os
 from joblib import Parallel, delayed
@@ -57,12 +56,8 @@ escenarios = [
     },
 ]
 
-# Parámetros iniciales
-N, capacidades = model_vars()
-xl = np.zeros(capacidades.shape[0])
-xu = capacidades
 
-
+# Clases y funciones originales
 class Queso(ElementwiseProblem):
     def __init__(self, data, N, demanda):
         super().__init__(n_var=len(capacidades), n_obj=1, n_eq_constr=1, xl=xl, xu=xu)
@@ -218,7 +213,6 @@ def run_experiment(
             "run": run + 1,
             "costo": costo,
             "tiempo": t_end - t_start,
-            "iteraciones": iterations,
         }
 
     results = Parallel(n_jobs=4)(
@@ -232,12 +226,7 @@ def summarize_experiment(results):
     df = pd.DataFrame(results)
     summary = (
         df.groupby(["block", "T_mutacion", "T_cruce", "size_pob", "N_gen"])
-        .agg(
-            mean=("costo", "mean"),
-            std=("costo", "std"),
-            avg_time=("tiempo", "mean"),
-            avg_iterations=("iteraciones", "mean"),
-        )
+        .agg(mean=("costo", "mean"), std=("costo", "std"), avg_time=("tiempo", "mean"))
         .reset_index()
     )
     summary["var.coeff"] = summary["std"] / summary["mean"]
@@ -251,9 +240,8 @@ def summarize_experiment(results):
             "mean",
             "var.coeff",
             "avg_time",
-            "avg_iterations",
         ]
-    ]  # Añadido avg_iterations
+    ]
     return summary
 
 
@@ -283,15 +271,18 @@ for i, escenario in enumerate(escenarios):
         continue
 
     # Verificar la existencia de los archivos
-    info_acopios = os.path.join(folder, "centros_acopio.xlsx")
-    costo_transporte = os.path.join(folder, "costos_transporte.xlsx")
-    tiempo_transporte = os.path.join(folder, "tiempos_transporte.xlsx")
+    info_acopios = "centros_acopio.xlsx"
+    costo_transporte = "costos_transporte.xlsx"
+    tiempo_transporte = "tiempos_transporte.xlsx"
     archivos = {
         "info_acopios": info_acopios,
         "costo_transporte": costo_transporte,
         "tiempo_transporte": tiempo_transporte,
     }
-    missing_files = [f for f in archivos.values() if not os.path.exists(f)]
+    missing_files = []
+    for file in [os.path.join(folder, f) for f in archivos.values()]:
+        if not os.path.exists(file):
+            missing_files.append(os.path.basename(file))
     if missing_files:
         print(
             f"Error: Archivos no encontrados en {folder}: {missing_files}. Saltando escenario {i + 1}."
@@ -301,6 +292,9 @@ for i, escenario in enumerate(escenarios):
     # Cargar datos para el escenario
     try:
         data = model_data(archivos, demanda, folder=folder)
+        N, _, capacidades = model_vars(data["params_df"])
+        xl = np.zeros(capacidades.shape[0])
+        xu = capacidades
     except Exception as e:
         print(f"Error al cargar datos en {folder}: {e}. Saltando escenario {i + 1}.")
         continue
@@ -384,7 +378,7 @@ for i, escenario in enumerate(escenarios):
     try:
         results_df.to_excel(results_file, index=False)
         print(
-            f"Resultados exportados a '{results_file}' con columnas: block, T_mutacion, T_cruce, size_pob, N_gen, run, costo, tiempo, iteraciones"
+            f"Resultados exportados a '{results_file}' con columnas: block, T_mutacion, T_cruce, size_pob, N_gen, run, costo, tiempo"
         )
     except Exception as e:
         print(f"Error al exportar '{results_file}': {e}")
@@ -394,7 +388,7 @@ for i, escenario in enumerate(escenarios):
     try:
         summary_df.to_excel(summary_file, index=False)
         print(
-            f"Resumen exportado a '{summary_file}' con columnas: block, T_mutacion, T_cruce, size_pob, N_gen, mean, var.coeff, avg_time, avg_iterations"
+            f"Resumen exportado a '{summary_file}' con columnas: block, T_mutacion, T_cruce, size_pob, N_gen, mean, var.coeff, avg_time"
         )
     except Exception as e:
         print(f"Error al exportar '{summary_file}': {e}")
