@@ -216,7 +216,7 @@ def run_experiment(
             "iteraciones": iterations,
         }
 
-    results = Parallel(n_jobs=6)(
+    results = Parallel(n_jobs=10)(
         delayed(single_run)(i, p_mutate, p_cross, pop_size, max_gen)
         for i in range(runs)
     )
@@ -231,7 +231,6 @@ def summarize_experiment(results):
             mean=("costo", "mean"),
             std=("costo", "std"),
             avg_time=("tiempo", "mean"),
-            avg_iterations=("iteraciones", "mean"),
         )
         .reset_index()
     )
@@ -246,7 +245,6 @@ def summarize_experiment(results):
             "mean",
             "var.coeff",
             "avg_time",
-            "avg_iterations",
         ]
     ]
     return summary
@@ -348,7 +346,7 @@ for i, escenario in enumerate(escenarios):
                     remaining_combinations = total_combinations - processed_combinations
                     remaining_time = avg_time_per_comb * remaining_combinations
                     print(
-                        f"Escenario {i + 1}: Procesadas {processed_combinations}/{total_combinations} combinaciones. Faltan aproximadamente {remaining_time / 60:.1f} minutos para terminar."
+                        f"Escenario {i + 1}: Procesadas {processed_combinations}/{total_combinations} combinaciones"
                     )
 
     for p_mutate in block2_p_mutate:
@@ -376,7 +374,7 @@ for i, escenario in enumerate(escenarios):
                     remaining_combinations = total_combinations - processed_combinations
                     remaining_time = avg_time_per_comb * remaining_combinations
                     print(
-                        f"Escenario {i + 1}: Procesadas {processed_combinations}/{total_combinations} combinaciones. Faltan aproximadamente {remaining_time / 60:.1f} minutos para terminar."
+                        f"Escenario {i + 1}: Procesadas {processed_combinations}/{total_combinations} combinaciones"
                     )
 
     # Guardar resultados

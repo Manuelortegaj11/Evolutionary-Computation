@@ -154,7 +154,7 @@ def run_experiment(
             "iteraciones": iterations,
         }
 
-    results = Parallel(n_jobs=4)(
+    results = Parallel(n_jobs=6)(
         delayed(single_run)(i, t_inicial, alpha) for i in range(runs)
     )
     return results
@@ -168,7 +168,6 @@ def summarize_experiment(results):
             mean=("costo", "mean"),
             std=("costo", "std"),
             avg_time=("tiempo", "mean"),
-            avg_iterations=("iteraciones", "mean"),
         )
         .reset_index()
     )
@@ -181,7 +180,6 @@ def summarize_experiment(results):
             "mean",
             "var.coeff",
             "avg_time",
-            "avg_iterations",
         ]
     ]
     return summary
@@ -249,7 +247,8 @@ for i, escenario in enumerate(escenarios):
             remaining_combinations = total_combinations - processed_combinations
             remaining_time = avg_time_per_comb * remaining_combinations
             print(
-                f"Escenario {i + 1}: Procesadas {processed_combinations}/{total_combinations} combinaciones. Faltan aproximadamente {remaining_time / 60:.1f} minutos para terminar."
+                f"Escenario {i + 1}: Procesadas {processed_combinations}/{total_combinations} combinaciones"
+                # Faltan aproximadamente {remaining_time / 60:.1f} minutos para terminar.            )
             )
 
     for t_inicial in block2_t_inicial:
@@ -265,7 +264,8 @@ for i, escenario in enumerate(escenarios):
             remaining_combinations = total_combinations - processed_combinations
             remaining_time = avg_time_per_comb * remaining_combinations
             print(
-                f"Escenario {i + 1}: Procesadas {processed_combinations}/{total_combinations} combinaciones. Faltan aproximadamente {remaining_time / 60:.1f} minutos para terminar."
+                f"Escenario {i + 1}: Procesadas {processed_combinations}/{total_combinations} combinaciones"
+                # Faltan aproximadamente {remaining_time / 60:.1f} minutos para terminar."
             )
 
     # Guardar resultados
