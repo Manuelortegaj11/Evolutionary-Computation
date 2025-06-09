@@ -213,6 +213,7 @@ def run_experiment(
             "run": run + 1,
             "costo": costo,
             "tiempo": t_end - t_start,
+            "iteraciones": iterations,
         }
 
     results = Parallel(n_jobs=4)(
@@ -226,7 +227,12 @@ def summarize_experiment(results):
     df = pd.DataFrame(results)
     summary = (
         df.groupby(["block", "T_mutacion", "T_cruce", "size_pob", "N_gen"])
-        .agg(mean=("costo", "mean"), std=("costo", "std"), avg_time=("tiempo", "mean"))
+        .agg(
+            mean=("costo", "mean"),
+            std=("costo", "std"),
+            avg_time=("tiempo", "mean"),
+            avg_iterations=("iteraciones", "mean"),
+        )
         .reset_index()
     )
     summary["var.coeff"] = summary["std"] / summary["mean"]
@@ -240,6 +246,7 @@ def summarize_experiment(results):
             "mean",
             "var.coeff",
             "avg_time",
+            "avg_iterations",
         ]
     ]
     return summary
